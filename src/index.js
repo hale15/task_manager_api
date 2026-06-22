@@ -12,6 +12,8 @@ app.use(express.json());
 
 // Routes
 app.use('/api/auth', authRoutes);
+const taskRoutes = require('./routes/taskRoutes');
+app.use('/api/tasks', taskRoutes);
 
 // Health check route
 app.get('/', (req, res) => {
@@ -36,6 +38,8 @@ app.get('/db-test', async (req, res) => {
 
 // Start server
 const PORT = process.env.PORT || 3001;
+const errorHandler = require('./middleware/errorHandler');
+app.use(errorHandler);
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
