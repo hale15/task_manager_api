@@ -1,0 +1,73 @@
+# Name of your workflow — shows up in GitHub Actions tab
+name: CI/CD Pipeline
+
+# TRIGGER — what starts this workflow
+# This runs every time you push to the main branch
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# JOBS — the work to be done
+jobs:
+
+  # JOB 1 — Run tests
+  test:
+    # Runner — use GitHub's free Ubuntu machine
+    runs-on: ubuntu-latest
+
+    # STEPS — tasks inside this job
+    steps:
+      # Step 1 — Download your code onto the runner machine
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2 — Install Node.js on the runner machine
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      # Step 3 — Install your project dependencies
+      - name: Install dependencies
+        run: npm ci
+
+      # Step 4 — Run your tests
+      # We will add real tests soon — for now this just checks the app starts
+      - name: Run tests
+        run: npm test --if-present
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
+  # JOB 2 — Build and push Docker image
+  # This job only runs if the test job passes
+  docker:
+    needs: test
+    runs-on: ubuntu-latest
+    
+    # Only run on push to main — not on pull requests
+    if: github.event_name == 'push'
+
+    steps:
+      # Step 1 — Download code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2 — Login to Docker Hub
+      # We use secrets so our password is never exposed in code
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # Step 3 — Build and push Docker image
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/task-manager-api:latest
