@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+
+  # Service 1 — Our Node.js API
+  api:
+    build: .
+    container_name: task-manager-api
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - DATABASE_URL=postgresql://postgres:postgres123@db:5432/taskmanager
+      - JWT_SECRET=haleluya_secret_key_2024_make_this_long
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  # Service 2 — PostgreSQL database
+  db:
+    image: postgres:15-alpine
+    container_name: task-manager-db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres123
+      - POSTGRES_DB=taskmanager
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+
+# Named volume to persist database data
+# Without this your data disappears when container stops
+volumes:
+  postgres_data:
