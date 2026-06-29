@@ -1,6 +1,6 @@
 # Task Manager API
 
-![CI/CD Pipeline](https://github.com/hale15/task-manager-api/actions/workflows/ci.yml/badge.svg)
+![CI/CD Pipeline](https://github.com/hale15/task_manager_api/actions/workflows/ci.yml/badge.svg)
 
 A full-stack task management REST API built with Node.js, Express, PostgreSQL, and Docker.
 
